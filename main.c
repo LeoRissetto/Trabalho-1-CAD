@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <omp.h>
 
 #define MAX_LINE_LENGTH 1000
 
@@ -18,53 +17,90 @@ int compare(const void *a, const void *b)
     return char1->frequency != char2->frequency ? char1->frequency - char2->frequency : char2->ascii - char1->ascii;
 }
 
-int main()
+char *process_line(const char *line)
 {
-    char line[MAX_LINE_LENGTH + 1];
+    CharFrequency charFreq[96];
     int frequencies[128] = {0};
-    CharFrequency result[96];
-    int result_count = 0;
-    int pos;
 
-    while (fgets(line, MAX_LINE_LENGTH + 1, stdin) != NULL)
+    int count = 0;
+
+    #pragma omp parallel for reduction(+ : frequencies[ : 128])
+    for (int i = 0; line[i] != '\0'; i++)
     {
-        #pragma omp parallel for
-        for (int i = 0; i < 128; i++)
+        if (line[i] >= 32 && line[i] < 128)
         {
-            frequencies[i] = 0;
+            frequencies[(int)line[i]]++;
         }
-        result_count = 0;
-
-        #pragma omp parallel for reduction(+ : frequencies[ : 128])
-        for (int i = 0; line[i] != '\0'; i++)
-        {
-            if (line[i] >= 32 && line[i] < 128)
-            {
-                frequencies[(int)line[i]]++;
-            }
-        }
-
-        #pragma omp parallel for reduction(+:result_count)
-        for (int i = 32; i < 128; i++)
-        {
-            if (frequencies[i] > 0)
-            {
-                #pragma omp atomic capture
-                pos = result_count++;
-                result[pos].ascii = i;
-                result[pos].frequency = frequencies[i];
-            }
-        }
-
-        qsort(result, result_count, sizeof(CharFrequency), compare);
-
-        #pragma omp parallel for
-        for (int i = 0; i < result_count; i++)
-        {
-            printf("%d %d\n", result[i].ascii, result[i].frequency);
-        }
-        printf("\n");
     }
 
+    #pragma omp parallel for
+    for (int i = 32; i < 128; i++)
+    {
+        if (frequencies[i] > 0)
+        {
+            int local_index;
+
+            #pragma omp atomic capture
+            local_index = count++;
+
+            charFreq[local_index].ascii = i;
+            charFreq[local_index].frequency = frequencies[i];
+        }
+    }
+
+    qsort(charFreq, count, sizeof(CharFrequency), compare);
+
+    char *output = (char *)malloc(count * 20 + 1);
+    if (output == NULL)
+    {
+        return NULL;
+    }
+    output[0] = '\0';
+
+    for (int i = 0; i < count; i++)
+    {
+        char temp[20];
+        sprintf(temp, "%d %d\n", charFreq[i].ascii, charFreq[i].frequency);
+        strcat(output, temp);
+    }
+
+    return output;
+}
+
+int main()
+{
+    char(*line)[MAX_LINE_LENGTH] = NULL;
+    line = malloc(sizeof(*line));
+
+    int line_count = 0;
+
+    for (; fgets(line[line_count], MAX_LINE_LENGTH, stdin) != NULL; line_count++)
+    {
+        char(*temp)[MAX_LINE_LENGTH] = realloc(line, (line_count + 1) * sizeof(*line));
+        line = temp;
+    }
+
+    char *output[line_count];
+
+    #pragma omp parallel for
+    for (int i = 0; i < line_count; i++)
+    {
+        output[i] = process_line(line[i]);
+    }
+
+    for (int i = 0; i < line_count; i++)
+    {
+        if (i < line_count - 1)
+        {
+            printf("%s\n", output[i]);
+        }
+        else
+        {
+            printf("%s", output[i]);
+        }
+        free(output[i]);
+    }
+
+    free(line);
     return 0;
 }
