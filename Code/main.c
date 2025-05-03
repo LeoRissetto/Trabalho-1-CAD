@@ -71,40 +71,55 @@ char *process_line(const char *line)
 
 int main()
 {
-    char **line = NULL;
-    int line_count = 0;
-
     char buffer[MAX_LINE_LENGTH];
+    char **output_lines = NULL;
+    int num_lines = 0;
+    int aux = 1;
 
-    for (; fgets(buffer, MAX_LINE_LENGTH, stdin) != NULL; line_count++)
+    #pragma omp parallel
     {
-        char **temp = realloc(line, (line_count + 1) * sizeof(char *));
-        line = temp;
-        line[line_count] = strdup(buffer);
-    }
-
-    char *output[line_count];
-
-    #pragma omp parallel for
-    for (int i = 0; i < line_count; i++)
-    {
-        output[i] = process_line(line[i]);
-        free(line[i]);
-    }
-
-    for (int i = 0; i < line_count; i++)
-    {
-        if (i < line_count - 1)
+        #pragma omp single
         {
-            printf("%s\n", output[i]);
+            while (fgets(buffer, MAX_LINE_LENGTH, stdin) != NULL)
+            {
+                buffer[strcspn(buffer, "\n")] = '\0';
+
+                char *line = strdup(buffer);
+                int current_index = num_lines++;
+
+                #pragma omp task firstprivate(line, current_index)
+                {
+                    char *output = process_line(line);
+
+                    #pragma omp critical
+                    {
+                        if(aux)
+                        {
+                            output_lines = realloc(output_lines, num_lines * sizeof(char *));
+                            aux = 0;
+                        }
+                        output_lines[current_index] = output;
+                    }
+
+                    free(line);
+                }
+            }
+            #pragma omp taskwait
         }
-        else
-        {
-            printf("%s", output[i]);
-        }
-        free(output[i]);
     }
 
-    free(line);
+    for (int i = 0; i < num_lines; i++)
+    {
+        if (strcmp(output_lines[i], "\0") != 0)
+        {
+            if (i != num_lines - 1)
+                printf("%s\n", output_lines[i]);
+            else
+                printf("%s", output_lines[i]);
+        }
+        free(output_lines[i]);
+    }
+
+    free(output_lines);
     return 0;
 }
