@@ -1,3 +1,10 @@
+/* Membros: 
+    - Karine Cerqueira Nascimento - NUSP: 13718404
+    - Caio Oliveira Godinho - NUSP: 
+    - Leonardo Gueno Rissetto - NUSP: 13676482
+    - Thiago Kashivagui Gonçalves - NUSP: 13676579
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
