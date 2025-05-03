@@ -69,15 +69,16 @@ char *process_line(const char *line)
 
 int main()
 {
-    char(*line)[MAX_LINE_LENGTH] = NULL;
-    line = malloc(sizeof(*line));
-
+    char **line = NULL;
     int line_count = 0;
 
-    for (; fgets(line[line_count], MAX_LINE_LENGTH, stdin) != NULL; line_count++)
+    char buffer[MAX_LINE_LENGTH];
+
+    for (; fgets(buffer, MAX_LINE_LENGTH, stdin) != NULL; line_count++)
     {
-        char(*temp)[MAX_LINE_LENGTH] = realloc(line, (line_count + 1) * sizeof(*line));
+        char **temp = realloc(line, (line_count + 1) * sizeof(char *));
         line = temp;
+        line[line_count] = strdup(buffer);
     }
 
     char *output[line_count];
@@ -86,6 +87,7 @@ int main()
     for (int i = 0; i < line_count; i++)
     {
         output[i] = process_line(line[i]);
+        free(line[i]);
     }
 
     for (int i = 0; i < line_count; i++)
