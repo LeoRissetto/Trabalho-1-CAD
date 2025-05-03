@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <omp.h>
 #define MAX_LINE_LENGTH 1000
 
 typedef struct
