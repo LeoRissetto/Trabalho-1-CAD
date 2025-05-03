@@ -74,7 +74,6 @@ int main()
     char buffer[MAX_LINE_LENGTH];
     char **output_lines = NULL;
     int num_lines = 0;
-    int aux = 1;
 
     #pragma omp parallel
     {
@@ -93,11 +92,7 @@ int main()
 
                     #pragma omp critical
                     {
-                        if(aux)
-                        {
-                            output_lines = realloc(output_lines, num_lines * sizeof(char *));
-                            aux = 0;
-                        }
+                        output_lines = realloc(output_lines, num_lines * sizeof(char *));
                         output_lines[current_index] = output;
                     }
 
