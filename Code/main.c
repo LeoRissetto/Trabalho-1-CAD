@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <omp.h>
+
 #define MAX_LINE_LENGTH 1000
 
 typedef struct
@@ -23,9 +24,10 @@ char *process_line(const char *line)
     int frequencies[128] = {0};
 
     int count = 0;
+    int length = strlen(line);
 
     #pragma omp parallel for reduction(+ : frequencies[ : 128])
-    for (int i = 0; line[i] != '\0'; i++)
+    for (int i = 0; i < length; i++)
     {
         if (line[i] >= 32 && line[i] < 128)
         {
