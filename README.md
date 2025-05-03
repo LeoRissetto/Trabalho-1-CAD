@@ -6,7 +6,7 @@ Um programa em C que analisa texto de entrada para calcular e ordenar frequênci
 
 - Leonardo Gueno Rissetto - **NUSP: 13676482**
 - Thiago Kashivagui Gonçalves - **NUSP: 13676579**
-- Karine Cerqueira Nascimento - **NUSP:**
+- Karine Cerqueira Nascimento - **NUSP: 13718404**
 - Caio Oliveira Godinho - **NUSP:**
 
 ## Descrição
