@@ -52,7 +52,7 @@ char *process_line(const char *line)
 
     qsort(charFreq, count, sizeof(CharFrequency), compare);
 
-    char *output = (char *)malloc(count * 20 + 1);
+    char *output = (char *)malloc(count * 9 + 1);
     if (output == NULL)
     {
         return NULL;
@@ -61,7 +61,7 @@ char *process_line(const char *line)
 
     for (int i = 0; i < count; i++)
     {
-        char temp[20];
+        char temp[10];
         sprintf(temp, "%d %d\n", charFreq[i].ascii, charFreq[i].frequency);
         strcat(output, temp);
     }
@@ -75,6 +75,9 @@ int main()
     char **output_lines = NULL;
     int num_lines = 0;
 
+    int aux = 1;
+    int size = 0;
+
     #pragma omp parallel
     {
         #pragma omp single
@@ -82,6 +85,11 @@ int main()
             while (fgets(buffer, MAX_LINE_LENGTH, stdin) != NULL)
             {
                 buffer[strcspn(buffer, "\n")] = '\0';
+
+                if(buffer[0] == '\0')
+                {
+                    continue;
+                }
 
                 char *line = strdup(buffer);
                 int current_index = num_lines++;
@@ -92,7 +100,12 @@ int main()
 
                     #pragma omp critical
                     {
-                        output_lines = realloc(output_lines, num_lines * sizeof(char *));
+                        if(aux)
+                        {
+                            size++;
+                            output_lines = realloc(output_lines, size * sizeof(char *));
+                            aux = 0;
+                        }
                         output_lines[current_index] = output;
                     }
 
@@ -105,13 +118,10 @@ int main()
 
     for (int i = 0; i < num_lines; i++)
     {
-        if (strcmp(output_lines[i], "\0") != 0)
-        {
-            if (i != num_lines - 1)
-                printf("%s\n", output_lines[i]);
-            else
-                printf("%s", output_lines[i]);
-        }
+        if (i != num_lines - 1)
+            printf("%s\n", output_lines[i]);
+        else
+            printf("%s", output_lines[i]);
         free(output_lines[i]);
     }
 
