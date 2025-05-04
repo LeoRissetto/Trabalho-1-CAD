@@ -29,52 +29,36 @@ char *process_line(const char *line)
 {
     CharFrequency charFreq[96];
     int frequencies[128] = {0};
-
     int count = 0;
     int length = strlen(line);
 
-    #pragma omp parallel
+    #pragma omp parallel reduction(+:frequencies[:128])
     {
-        int local_frequencies[128] = {0};
-
-        #pragma omp for
+        #pragma omp for schedule(static)
         for (int i = 0; i < length; i++)
         {
             if (line[i] >= 32 && line[i] < 128)
             {
-                local_frequencies[(int)line[i]]++;
+                frequencies[(int)line[i]]++;
             }
         }
+    }
 
-        #pragma omp for
-        for (int i = 32; i < 128; i++)
+    for (int i = 32; i < 128; i++)
+    {
+        if (frequencies[i] > 0)
         {
-            #pragma omp atomic
-            frequencies[i] += local_frequencies[i];
-        }
-
-        #pragma omp for
-        for (int i = 32; i < 128; i++)
-        {
-            if (frequencies[i] > 0)
-            {
-                int local_index;
-
-                #pragma omp atomic capture
-                local_index = count++;
-
-                charFreq[local_index].ascii = i;
-                charFreq[local_index].frequency = frequencies[i];
-            }
+            charFreq[count].ascii = i;
+            charFreq[count].frequency = frequencies[i];
+            count++;
         }
     }
 
     qsort(charFreq, count, sizeof(CharFrequency), compare);
 
-    int buffer_size = count * 10 + 1;
-    char *buffer = (char *)malloc(buffer_size);
+    char *buffer = (char *)malloc(sizeof(char) * (count * 10 + 1));
     buffer[0] = '\0';
-
+    
     for (int i = 0; i < count; i++)
     {
         char temp[10];
@@ -90,8 +74,8 @@ int main()
     char buffer[MAX_LINE_LENGTH];
     int num_lines = 0;
 
-    char **output_lines = malloc(sizeof(char *) * 1000);
     int capacity = 1000;
+    char **output_lines = malloc(sizeof(char *) * capacity);
 
     #pragma omp parallel
     {
@@ -112,6 +96,7 @@ int main()
                 #pragma omp task firstprivate(line, current_index)
                 {
                     char *output = process_line(line);
+                    free(line);
 
                     #pragma omp critical
                     {
@@ -122,8 +107,6 @@ int main()
                         }
                         output_lines[current_index] = output;
                     }
-
-                    free(line);
                 }
             }
             #pragma omp taskwait
@@ -132,10 +115,9 @@ int main()
 
     for (int i = 0; i < num_lines; i++)
     {
+        printf("%s", output_lines[i]);
         if (i != num_lines - 1)
-            printf("%s\n", output_lines[i]);
-        else
-            printf("%s", output_lines[i]);
+            printf("\n");
         free(output_lines[i]);
     }
 
