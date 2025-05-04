@@ -33,11 +33,12 @@ char *process_line(const char *line)
     int count = 0;
     int length = strlen(line);
 
-    #pragma omp parallel for reduction(+ : frequencies[ : 128])
+    #pragma omp parallel for
     for (int i = 0; i < length; i++)
     {
         if (line[i] >= 32 && line[i] < 128)
         {
+            #pragma omp atomic update
             frequencies[(int)line[i]]++;
         }
     }
