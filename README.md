@@ -4,7 +4,7 @@ Um programa em C que analisa texto de entrada para calcular e ordenar frequênci
 
 ## Membros
 
-- Caio Oliveira Godinho - **NUSP:**
+- Caio Oliveira Godinho - **NUSP: 12731996**
 - Karine Cerqueira Nascimento - **NUSP: 13718404**
 - Leonardo Gueno Rissetto - **NUSP: 13676482**
 - Thiago Kashivagui Gonçalves - **NUSP: 13676579**
