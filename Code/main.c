@@ -33,48 +33,47 @@ char *process_line(const char *line)
     int count = 0;
     int length = strlen(line);
 
-    #pragma omp parallel for
-    for (int i = 0; i < length; i++)
+    #pragma omp parallel
     {
-        if (line[i] >= 32 && line[i] < 128)
+        #pragma omp for
+        for (int i = 0; i < length; i++)
         {
-            #pragma omp atomic update
-            frequencies[(int)line[i]]++;
+            if (line[i] >= 32 && line[i] < 128)
+            {
+                #pragma omp atomic update
+                frequencies[(int)line[i]]++;
+            }
         }
-    }
 
-    #pragma omp parallel for
-    for (int i = 32; i < 128; i++)
-    {
-        if (frequencies[i] > 0)
+        #pragma omp for
+        for (int i = 32; i < 128; i++)
         {
-            int local_index;
+            if (frequencies[i] > 0)
+            {
+                int local_index;
 
-            #pragma omp atomic capture
-            local_index = count++;
+                #pragma omp atomic capture
+                local_index = count++;
 
-            charFreq[local_index].ascii = i;
-            charFreq[local_index].frequency = frequencies[i];
+                charFreq[local_index].ascii = i;
+                charFreq[local_index].frequency = frequencies[i];
+            }
         }
     }
 
     qsort(charFreq, count, sizeof(CharFrequency), compare);
 
-    char *output = (char *)malloc(count * 10 + 1);
-    if (output == NULL)
-    {
-        return NULL;
-    }
-    output[0] = '\0';
+    char buffer[count*10+1];
+    buffer[0] = '\0';
 
     for (int i = 0; i < count; i++)
     {
         char temp[10];
         sprintf(temp, "%d %d\n", charFreq[i].ascii, charFreq[i].frequency);
-        strcat(output, temp);
+        strcat(buffer, temp);
     }
 
-    return output;
+    return strdup(buffer);
 }
 
 int main()
@@ -82,8 +81,8 @@ int main()
     char buffer[MAX_LINE_LENGTH];
     int num_lines = 0;
 
-    char **output_lines = malloc(sizeof(char *) * 20);
-    int capacity = 20;
+    char **output_lines = malloc(sizeof(char *) * 1000);
+    int capacity = 1000;
 
     #pragma omp parallel
     {
