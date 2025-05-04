@@ -59,7 +59,7 @@ char *process_line(const char *line)
 
     qsort(charFreq, count, sizeof(CharFrequency), compare);
 
-    char *output = (char *)malloc(count * 9 + 1);
+    char *output = (char *)malloc(count * 10 + 1);
     if (output == NULL)
     {
         return NULL;
@@ -79,11 +79,10 @@ char *process_line(const char *line)
 int main()
 {
     char buffer[MAX_LINE_LENGTH];
-    char **output_lines = NULL;
     int num_lines = 0;
 
-    int aux = 1;
-    int size = 0;
+    char **output_lines = malloc(sizeof(char *) * 20);
+    int capacity = 20;
 
     #pragma omp parallel
     {
@@ -107,11 +106,10 @@ int main()
 
                     #pragma omp critical
                     {
-                        if(aux)
+                        if (current_index >= capacity)
                         {
-                            size++;
-                            output_lines = realloc(output_lines, size * sizeof(char *));
-                            aux = 0;
+                            capacity *= 2;
+                            output_lines = realloc(output_lines, capacity * sizeof(char *));
                         }
                         output_lines[current_index] = output;
                     }
