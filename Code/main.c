@@ -119,9 +119,9 @@ int main()
 
     for (int i = 0; i < num_lines; i++)
     {
-        printf("%s", output_lines[i]);
-        if (i != num_lines - 1)
+        if(i)
             printf("\n");
+        printf("%s", output_lines[i]);
         free(output_lines[i]);
     }
 
