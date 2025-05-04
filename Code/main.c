@@ -35,14 +35,22 @@ char *process_line(const char *line)
 
     #pragma omp parallel
     {
+        int local_frequencies[128] = {0};
+
         #pragma omp for
         for (int i = 0; i < length; i++)
         {
             if (line[i] >= 32 && line[i] < 128)
             {
-                #pragma omp atomic update
-                frequencies[(int)line[i]]++;
+                local_frequencies[(int)line[i]]++;
             }
+        }
+
+        #pragma omp for
+        for (int i = 32; i < 128; i++)
+        {
+            #pragma omp atomic
+            frequencies[i] += local_frequencies[i];
         }
 
         #pragma omp for
@@ -63,7 +71,8 @@ char *process_line(const char *line)
 
     qsort(charFreq, count, sizeof(CharFrequency), compare);
 
-    char buffer[count*10+1];
+    int buffer_size = count * 10 + 1;
+    char *buffer = (char *)malloc(buffer_size);
     buffer[0] = '\0';
 
     for (int i = 0; i < count; i++)
@@ -73,7 +82,7 @@ char *process_line(const char *line)
         strcat(buffer, temp);
     }
 
-    return strdup(buffer);
+    return buffer;
 }
 
 int main()
