@@ -22,7 +22,7 @@ int compare(const void *a, const void *b)
 {
     CharFrequency *char1 = (CharFrequency *)a;
     CharFrequency *char2 = (CharFrequency *)b;
-    return char1->frequency != char2->frequency ? char1->frequency - char2->frequency : char2->ascii - char1->ascii;
+    return char1->frequency != char2->frequency ? char1->frequency - char2->frequency : char1->ascii - char2->ascii;
 }
 
 char *process_line(const char *line)
