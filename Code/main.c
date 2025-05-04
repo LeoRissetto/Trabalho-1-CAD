@@ -30,11 +30,12 @@ char *process_line(const char *line)
     CharFrequency charFreq[96];
     int frequencies[128] = {0};
     int count = 0;
+    int local_count;
     int length = strlen(line);
 
-    #pragma omp parallel reduction(+:frequencies[:128])
+    #pragma omp parallel
     {
-        #pragma omp for schedule(static)
+        #pragma omp for reduction(+:frequencies[:128]) schedule(static)
         for (int i = 0; i < length; i++)
         {
             if (line[i] >= 32 && line[i] < 128)
@@ -42,15 +43,18 @@ char *process_line(const char *line)
                 frequencies[(int)line[i]]++;
             }
         }
-    }
 
-    for (int i = 32; i < 128; i++)
-    {
-        if (frequencies[i] > 0)
+        #pragma omp for schedule(static)
+        for (int i = 32; i < 128; i++)
         {
-            charFreq[count].ascii = i;
-            charFreq[count].frequency = frequencies[i];
-            count++;
+            if (frequencies[i] > 0)
+            {
+                #pragma omp atomic capture
+                local_count = count++;
+
+                charFreq[local_count].ascii = i;
+                charFreq[local_count].frequency = frequencies[i];
+            }
         }
     }
 
