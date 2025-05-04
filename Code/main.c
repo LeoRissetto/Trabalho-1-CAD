@@ -85,7 +85,7 @@ int main()
     {
         #pragma omp single
         {
-            while (fgets(buffer, MAX_LINE_LENGTH, stdin) != NULL)
+            while (fgets(buffer, MAX_LINE_LENGTH, stdin))
             {
                 buffer[strcspn(buffer, "\n")] = '\0';
 
