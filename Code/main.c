@@ -77,10 +77,10 @@ void parallel_merge_sort(CharFrequency arr[], int left, int right)
     {
         int mid = left + (right - left) / 2;
 
-        #pragma omp task if (right - left > 1000)
+        #pragma omp task if (right - left > 10)
         parallel_merge_sort(arr, left, mid);
 
-        #pragma omp task if (right - left > 1000)
+        #pragma omp task if (right - left > 10)
         parallel_merge_sort(arr, mid + 1, right);
 
         #pragma omp taskwait
