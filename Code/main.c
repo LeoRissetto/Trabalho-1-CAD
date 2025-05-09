@@ -1,5 +1,5 @@
 /* Membros:
-    - Caio Oliveira Godinho - NUSP:
+    - Caio Oliveira Godinho - NUSP: 12731996
     - Karine Cerqueira Nascimento - NUSP: 13718404
     - Leonardo Gueno Rissetto - NUSP: 13676482
     - Thiago Kashivagui Gonçalves - NUSP: 13676579
@@ -138,7 +138,7 @@ int main()
     char buffer[MAX_LINE_LENGTH];
     int num_lines = 0;
     int capacity = 1000;
-    char **output_lines = malloc(sizeof(char *) * capacity);
+    char **output_lines = (char**) malloc(sizeof(char *) * capacity);
 
     omp_set_num_threads(omp_get_num_procs());
 
@@ -179,7 +179,7 @@ int main()
 
     for (int i = 0; i < num_lines; i++)
     {
-        if (i)
+        if (i != 0)
             printf("\n");
         printf("%s", output_lines[i]);
         free(output_lines[i]);

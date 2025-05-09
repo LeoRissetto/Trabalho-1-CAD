@@ -1,6 +1,10 @@
 # Prerequisites
 *.d
 
+# Binary file
+Code/main
+*.out
+
 # Object files
 *.o
 *.ko
