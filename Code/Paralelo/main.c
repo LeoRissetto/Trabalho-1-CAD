@@ -1,5 +1,5 @@
 /* Membros:
-    - Caio Oliveira Godinho - NUSP:
+    - Caio Oliveira Godinho - NUSP: 12731996
     - Karine Cerqueira Nascimento - NUSP: 13718404
     - Leonardo Gueno Rissetto - NUSP: 13676482
     - Thiago Kashivagui Gonçalves - NUSP: 13676579
