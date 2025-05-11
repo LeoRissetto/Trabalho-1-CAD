@@ -124,7 +124,7 @@ int main()
         }
     }
 
-    // Impressão e liberação de memória (comentada)
+    // Impressão e liberação de memória
     for (int i = 0; i < num_lines; i++)
     {
         if (i)
