@@ -39,6 +39,7 @@ void process_line(const char *line, char *output)
     int len = strlen(line); // Calcula o comprimento da linha
 
     // Conta as frequências, ignorando quebras de linha
+    #pragma omp parallel for reduction(+:freq[:ASCII_RANGE])
     for (int i = 0; i < len; i++)
     {
         char c = line[i];
@@ -50,13 +51,17 @@ void process_line(const char *line, char *output)
 
     // Preenche cf[] apenas com caracteres que aparecem
     int count = 0;
+    int local_count;
+    #pragma omp parallel for
     for (int i = 0; i < ASCII_RANGE; i++)
     {
         if (freq[i] > 0)
         {
-            cf[count].ascii = i;
-            cf[count].freq = freq[i];
-            count++;
+            #pragma omp atomic capture
+            local_count = count++;
+
+            cf[local_count].ascii = i;
+            cf[local_count].freq = freq[i];
         }
     }
 
@@ -102,13 +107,13 @@ int main()
                 // Cria uma nova tarefa para processar a linha
                 #pragma omp task firstprivate(line, num_lines)
                 {
-                    /* Código comentado que deveria realocar o vetor se necessário
+                    //Realocar o vetor se necessário
                     #pragma omp critical
                     if (num_lines == capacity)
                     {
                         capacity *= 2;
                         output_lines = realloc(output_lines, sizeof(char *) * capacity);
-                    }*/
+                    }
 
                     // Chama a função que processa a linha e armazena a saída
                     process_line(line, output_lines[num_lines]);
@@ -120,11 +125,9 @@ int main()
     // Impressão e liberação de memória (comentada)
     for (int i = 0; i < num_lines; i++)
     {
-        /*
-        if (i)
+        /*if (i)
             printf("\n");
-        printf("%s", output_lines[i]);
-        */
+        printf("%s", output_lines[i]);*/
         free(output_lines[i]); // Libera memória da linha processada
     }
 
