@@ -125,9 +125,9 @@ int main()
     // Impressão e liberação de memória (comentada)
     for (int i = 0; i < num_lines; i++)
     {
-        /*if (i)
+        if (i)
             printf("\n");
-        printf("%s", output_lines[i]);*/
+        printf("%s", output_lines[i]);
         free(output_lines[i]); // Libera memória da linha processada
     }
 

@@ -74,10 +74,10 @@ int main()
         qsort(cf, count, sizeof(CharFreq), compare);
 
         // Impressão comentada: imprime o código ASCII e a frequência de cada caractere
-        /*for (int i = 0; i < count; i++)
+        for (int i = 0; i < count; i++)
         {
             printf("%d %d\n", cf[i].ascii, cf[i].freq);
-        }*/
+        }
     }
 
     // Calcula e imprime o tempo total de execução
