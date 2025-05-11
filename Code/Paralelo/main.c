@@ -31,7 +31,7 @@ int compare(const void *a, const void *b)
 }
 
 // Função que processa uma linha e gera a saída formatada com frequências
-void process_line(const char *line, char *output)
+char *process_line(const char *line)
 {
     int freq[ASCII_RANGE] = {0}; // Frequência de cada caractere ASCII
     CharFreq cf[ASCII_RANGE];    // Vetor com caractere e frequência
@@ -69,21 +69,23 @@ void process_line(const char *line, char *output)
     qsort(cf, count, sizeof(CharFreq), compare);
 
     // Aloca espaço para a string de saída
-    output = malloc(count * 7 + 1); // Estimativa: até 7 bytes por entrada (char + espaço + freq + \n)
+    char *output = malloc(count * 9 + 1); // Estimativa: até 7 bytes por entrada (char + espaço + freq + \n)
     int pos = 0;
 
     // Formata a saída na string alocada
     for (int i = 0; i < count; i++)
     {
-        pos += sprintf(output + pos, "%c %d\n", cf[i].ascii, cf[i].freq);
+        pos += sprintf(output + pos, "%d %d\n", cf[i].ascii, cf[i].freq);
     }
     output[pos] = '\0'; // Finaliza a string
+
+    return output; // Retorna a string formatada
 }
 
 int main()
 {
     char line[MAX_LINE]; // Buffer para a linha de entrada
-    int num_lines = 0;   // Contador de linhas processadas
+    int num_lines = 0; // Contador de linhas lidas
     int capacity = 1000; // Capacidade inicial do vetor de resultados
 
     char **output_lines = malloc(sizeof(char *) * capacity); // Vetor para armazenar saídas de cada linha
@@ -96,7 +98,7 @@ int main()
         #pragma omp single
         {
             // Leitura sequencial das linhas
-            for (int num_lines = 0; fgets(line, MAX_LINE, stdin); num_lines++)
+            for (; fgets(line, MAX_LINE, stdin); num_lines++)
             {
                 size_t len = strcspn(line, "\n"); // Remove a quebra de linha
                 line[len] = '\0';
@@ -116,7 +118,7 @@ int main()
                     }
 
                     // Chama a função que processa a linha e armazena a saída
-                    process_line(line, output_lines[num_lines]);
+                    output_lines[num_lines] = process_line(line);
                 }
             }
         }
